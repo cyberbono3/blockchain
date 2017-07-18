@@ -1,0 +1,238 @@
+truffle init
+truffle compile
+truffle mirgrate
+truffle console
+>HelloWorld.deployed() publishes the information about the contract
+
+
+
+npm list -g // lists working directory
+var helloWorld = HelloWorld.deployed()
+
+migrate --reset
+
+
+
+
+HelloWorld.deployed().then(function(deployed) {return deployed.balance();});
+
+
+truffle(development)> HelloWorld.deployed().then(function(deployed) {return deployed.balance();});
+{ [String: '1000'] s: 1, e: 3, c: [ 1000 ] }
+
+
+helloWorld.then(function(deployed) {return deployed.balance();});
+{ [String: '1000'] s: 1, e: 3, c: [ 1000 ] }
+
+
+
+HelloWorld.deployed().then(function(deployed) {return deployed.balance();});
+
+web3.eth.accounts  //outputs the list of accounts
+web3.eth // outputs the list of operations
+helloWorld.then(function(deployed) {return deployed.deposit(500);});
+
+
+
+
+var accounts = web3.eth.accounts
+
+web3.eth.getBalance(accounts[0]) balance of first account
+truffle(development)> web3.eth.getBalance(accounts[0])
+{ [String: '99962356500000000000'] s: 1, e: 19, c: [ 999623, 56500000000000 ether ] }
+
+
+//deposit 500
+
+helloWorld.then(function(deployed) {return deployed.deposit(500);});
+
+helloWorld.then(function(deployed) {return deployed.balance();});
+{ [String: '1500'] s: 1, e: 3, c: [ 1500 ] }
+
+
+------------------------------------------------------------------------------
+send money from one acocutn to another
+
+------------------------------------------------------------------------
+contract HelloWorld {
+
+address public owner;
+mapping (address => uint) balances;
+
+function HelloWorld() {
+     owner = msg.sender;
+     balances[owner] = 1000;
+  }
+
+ function transfer(address _receiver, uint _value) returns (bool success){
+
+    if (balances[msg.sender] < _value) return false;
+       
+     balances[msg.sender] -= _value;
+     balances[_receiver] += _value;
+     return true;
+}
+
+
+function getBalance(address _user) constant returns (uint) {
+    return balances[_user];
+}
+ 
+}
+---------------------------------------------------------------------------
+
+send money it works
+helloWorld.then(function(deployed) {return deployed.getBalance(account1);});
+helloWorld.then(function(deployed) {return deployed.transfer(account2,500);});
+helloWorld.then(function(deployed) {return deployed.getBalance(account2);});
+helloWorld.then(function(deployed) {return deployed.getBalance(account1);});
+
+truffle(development)> helloWorld.then(function(deployed) {return deployed.getBalance(account2);});
+{ [String: '1000'] s: 1, e: 3, c: [ 1000 ] }
+truffle(development)> helloWorld.then(function(deployed) {return deployed.getBalance(account1);});
+{ [String: '0'] s: 1, e: 0, c: [ 0 ] }
+
+
+---------------------------------------
+https://github.com/ethereum/EIPs
+erc20 standart token
+
+----------------------------------------------------
+https://monax.io/docs/
+advances soliditity features
+
+
+
+------------------------------------------------------
+//function can not return a struct
+// if you looping through long array your gas can be over
+//evm has limit 16 variables in a cal stack
+
+---------------------------------------------------------------
+pragma solidity ^0.4.11;
+contract People{
+
+Person[] public people;
+
+ struct Person {
+    bytes32 firstName;
+    bytes32 lastName;
+    uint age;
+
+}
+
+function addPerson(bytes32 _firstName, bytes32 _lastName, uint _age) returns (bool success) {
+   
+  Person memory newPerson; 
+    newPerson.firstName = _firstName;
+    newPerson.lastName = _lastName;
+    newPerson.age = _age;
+
+    people.push(newPerson); 
+    return true;
+}
+
+function getPeople() constant returns (bytes32[], bytes32[], uint[]) {
+
+    uint length = people.length;
+
+    bytes32[] memory firstNames  = new bytes32[](length);
+    bytes32[] memory lastNames = new bytes32[](length);
+    uint[]  memory ages = new uint[](length);
+
+    for ( uint i = 0 ; i < people.length; i++)  
+    {
+        Person memory currentPerson;
+        currentPerson = people[i];
+
+        firstNames[i] = currentPerson.firstName;
+        lastNames[i] = currentPerson.lastName;
+        ages[i] = currentPerson.age;
+    }
+     return (firstNames, lastNames, ages);
+
+
+}
+
+
+to add people
+People.deployed().then(function(deployed) {return deployed.addPerson("Andrei", "Ivasko", 31);});
+
+People.deployed().then(function(deployed) {return deployed.getPeople();});
+truffle(development)> People.deployed().then(function(deployed) {return deployed.getPeople();});
+[ [ '0x416e647265690000000000000000000000000000000000000000000000000000' ],
+  [ '0x497661736b6f0000000000000000000000000000000000000000000000000000' ],
+  [ { [String: '31'] s: 1, e: 1, c: [Object] } ] ]
+
+hex = "0x416e647265690000000000000000000000000000000000000000000000000000"
+web3.toAscii(hex)
+
+
+
+
+-------------------------------------------------------------------------------------------
+develop react app as UI
+https://facebook.github.io/react/blog/2016/07/22/create-apps-with-no-configuration.html
+npm install -g create-react-app
+create-react-app peoplelistui
+npm start
+
+
+Ethereum JavaScript API, middleware to talk to a ethereum node over RPC
+0.19.1
+
+then to include web3 library in packagejson
+
+then npm install
+
+npm start
+
+App.js
+import web3 from 'web3'
+new Web3(new Web3.providers.HttpProvider('http://localhost:8585")
+
+People.deployed().then(function(deployed) {return deployed.address);});
+
+People.deployed().then(function(deployed) {return JSON.stringify(deployed.abi);});
+
+truffle(development)> People.deployed().then(function(deployed)
+ {return JSON.stringify(deployed.abi);});
+'[{"constant":true,"inputs":[],"name":"getPeople","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"bytes32[]"},{"name":"","type":"uint256[]"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_firstName","type":"bytes32"},{"name":"_lastName","type":"bytes32"},{"name":"_age","type":"uint256"}],"name":"addPerson","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"people","outputs":[{"name":"firstName","type":"bytes32"},{"name":"lastName","type":"bytes32"},{"name":"age","type":"uint256"}],"payable":false,"type":"function"}]'
+
+
+
+18
+down vote
+accepted
+
+--------------------------------------------------------------
+ABI stands for application binary interface.
+
+In general, an ABI is the interface between two program modules, one of which is often at the level of machine code. The interface is the de facto method for encoding/decoding data into/out of the machine code.
+
+In ethereum, it's basicly how you can encode solidity contracts for the EVM and backwards how to read the data out of transactions.
+---------------------------------------------------------------
+
+People.deployed().then(function(deployed) {return deployed.address;});
+
+
+
+then i copy 3 varibales to chrome console
+ETHEREUM_CLIENT 
+peopleContractABI
+peopleContractAddress
+then
+ETHERIUM_CLIENT.eth.contract(peopleContractABI)
+then 
+original instance pof the contract that is going to nr in truffle
+ETHERIUM_CLIENT.eth.contract(peopleContractABI).at(peopleContractAddress)
+we get contract object
+declare global variable on the actual contract and invoke the function temp1.getPeople()
+we get three arrays
+Contract {_eth: Eth, transactionHash: null, address: "0xaa6bf0bbd613b18f74708b41625a33858ef18060", abi: Array(3), getPeople:
+
+
+
+
+
+
